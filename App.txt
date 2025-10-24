@@ -1,0 +1,146 @@
+import './App.css'
+import { useState, useEffect } from 'react';
+import { supabase } from './services/supabase';
+
+interface Tasks {
+  id: number,
+  created_at: string,
+  title: string,
+  description: string,
+}
+
+export default function App() {
+  const [newTask, setNewTask] = useState({title: "", description: ""});
+  const [tasks, setTask] = useState<Tasks[]>([]);
+  const [newDescription, setNewDescription] = useState("");
+
+  // CRUD Supabase x React js
+
+  //Delete Function:
+  const DeleteTask = async (id: number) => {
+    const { error } = await supabase
+            .from('tasks')
+            .delete() // delete function
+            .eq('id', id) // eq = 'equals' -> eq('column', 'equal to the first argrument)
+
+    if (error) {
+      console.error("Error delete task", error.message)
+      return 0;
+    }    
+    // continue delete task
+  }
+
+  //Update Function: 
+  const UpdateTask = async (id: number) => {
+    const { error } = await supabase  
+            .from('tasks')
+            .update({description: newDescription}) //update function ({description: 'new description'})
+            .eq('id', id) // eq
+
+    if (error) {
+      console.error("Error update task", error.message)
+      return 0;
+    }
+    // continue update task
+  }
+
+  // Read Function:
+  const ReadTask = async () => {
+
+    const { error, data } = await supabase
+              .from('tasks') // table supabase
+              .select('*') // specific selection
+              .order('created_at', {ascending: true}) // order
+
+    if (error) {
+      console.error("Error read task", error.message);
+      return 0;
+    }
+
+    // if no error: fetch data setTask(data)
+    setTask(data);
+
+  };
+
+  // Create Function:
+  const CreateTask = async (e: any) => {
+    //cancels the event if it is cancelable; prevent default form submission behavior. e.i empyt
+    e.preventDefault();
+
+    const { error } = await supabase
+              .from('tasks')
+              .insert(newTask) 
+              .single() 
+
+    if (error) {
+      console.error("Error create task", error.message);
+      return 0;
+    }
+
+    setNewTask({title: "", description: ""});
+  };
+
+  // to auto read the ReadTask Function
+  useEffect(() => {
+    ReadTask();
+  })
+
+  return (
+    <>
+      <h1>Supabase x React js</h1>
+
+      <form onSubmit={CreateTask}>
+
+        <input 
+          type="text"
+          placeholder='Title Here' 
+          // onChange for title
+          onChange={(e) => 
+            setNewTask((prev) => ({...prev, title: e.target.value}))
+          }
+          required
+        />
+        <textarea 
+          name=''
+          id=''
+          placeholder='Description Here'
+          // onChange for description
+          onChange={(e) =>
+            setNewTask((prev) => ({...prev, description: e.target.value}))
+          }
+          required
+        />
+
+        <button>Add Task</button>
+
+      </form>
+
+      {/* use useState and ReadTask function to display the tasks */}
+
+      <ul>
+        {tasks.map((task, key) => (
+        <li key={key}>
+          <div>
+
+            <h3>{task.title}</h3>
+            <p>{task.description}</p>
+            <textarea 
+              placeholder='Edit description'
+
+              //onChange update description onChange
+              onChange={(e: any) =>
+                setNewDescription(e.target.value)
+              }
+            />
+            <button onClick={() => UpdateTask(task.id)}>Update Task</button>
+            <button onClick={() => DeleteTask(task.id)}>Delete Task</button>
+
+          </div>
+        </li>
+        ))} 
+      </ul>
+    </>
+  )
+}
+
+

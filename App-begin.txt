@@ -1,0 +1,51 @@
+import './App.css'
+
+
+export default function App() {
+
+  return (
+    <>
+      <h1>Supabase x React js</h1>
+
+      <form onSubmit={}>
+
+        <input 
+          type="text"
+          placeholder='Title Here' 
+          required
+        />
+        <textarea 
+          name=''
+          id=''
+          placeholder='Description Here'
+          required
+        />
+
+        <button>Add Task</button>
+
+      </form>
+
+      {/* use useState and ReadTask function to display the tasks */}
+
+      <ul>
+        {tasks.map((task, key) => (
+        <li key={key}>
+          <div>
+
+            <h3>{task.title}</h3>
+            <p>{task.description}</p>
+            <textarea 
+              placeholder='Edit description'
+            />
+            <button>Update Task</button>
+            <button>Delete Task</button>
+
+          </div>
+        </li>
+        ))} 
+      </ul>
+    </>
+  )
+}
+
+
