@@ -1,6 +1,6 @@
 import { supabase } from "./services/supabase";
 import { useState, useEffect, type ChangeEvent } from "react";
-import './App.css'
+import './index.css'
 
 // needed for useState as references
 interface Tasks {
@@ -182,12 +182,12 @@ export default function Demo() {
     })
 
   return (
-    <>
+    <div className="bg-[#242424] min-h-screen min-w-screen">
         <h1>
             Demo Supabase
         </h1>
 
-        <form onSubmit={CreateTask}  action="">
+        <form className="" onSubmit={CreateTask}  action="">
 
             <input 
                 type="text"
@@ -196,6 +196,7 @@ export default function Demo() {
                 onChange={(intxt) =>
                     setNewTask((prev) => ({...prev, title: intxt.target.value}))
                 }
+                className="p-4"
             />
 
             <textarea 
@@ -207,21 +208,24 @@ export default function Demo() {
                 onChange={(intxt) =>
                     setNewTask((prev) => ({...prev, description: intxt.target.value}))
                 }
+                className="p-4"
             />
 
-            <div>
-                <p>Image Upload</p>
-                {/* handleImage */}
-                <input type="file" accept="image/*" onChange={handleImage}/>
+            <div className="flex border-2 p-4 m-4">
+                <div>
+                    <p className="font-semibold">Image Upload</p>
+                    {/* handleImage */}
+                    <input type="file" accept="image/*" onChange={handleImage}/>
+                </div>
+
+                <div>
+                    <p className="font-semibold">Video Upload</p>
+                    {/* handleVideo*/}
+                    <input type="file" accept="video/*" onChange={handleVideo}/>
+                </div>
             </div>
 
-            <div>
-                <p>Video Upload</p>
-                {/* handleVideo*/}
-                <input type="file" accept="video/*" onChange={handleVideo}/>
-            </div>
-
-            <button>Add Task</button>
+            <button className="bg-lime-500"><p className="font-semibold">Add Task </p></button>
 
         </form>
 
@@ -274,6 +278,6 @@ export default function Demo() {
                 </li>
             ))}
         </ul>
-    </>
+    </div>
   )
 }

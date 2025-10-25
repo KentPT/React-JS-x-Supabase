@@ -1,4 +1,4 @@
-import './App.css'
+import './index.css'
 import React, { useState, useEffect } from 'react'
 import type { ChangeEvent } from 'react'
 import { supabase } from './services/supabase'

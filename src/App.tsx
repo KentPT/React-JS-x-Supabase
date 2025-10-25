@@ -1,6 +1,6 @@
 import { supabase } from "./services/supabase"
 import { useState, useEffect } from "react"
-import './App.css'
+import './index.css'
 
 // reference for task
 interface Task {
