@@ -22,6 +22,10 @@ App.txt
 App2.txt
 App-begin.txt
 
+#tsx file
+Demo.tsx
+Test.tsx
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
