@@ -10,7 +10,7 @@ interface Task {
 }
 
 export default function App() {
-  const tableName: string = 'webtask'
+  const tableName = import.meta.env.VITE_TABLE_NAME
 
   const [newTask, setNewTask] = useState({ title: "", description: ""})
   const [tasks, setTasks] = useState<Task[]>([])
