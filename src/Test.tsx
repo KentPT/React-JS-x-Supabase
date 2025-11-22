@@ -1,7 +1,7 @@
 import './index.css'
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import type { ChangeEvent } from 'react'
-import { supabase } from './services/supabase'
+import { supabase } from '../services/supabase'
 
 
 // Create, Read, Update, and Delete x Supabase
@@ -24,7 +24,7 @@ export default function App() {
     const [newTitle, setNewTitle] = useState('');
 
     const [taskVideo, setTaskVideo] = useState<File | null>(null);
-    const [taskImage, setTaskImage] = useState<File | null>(null); 
+    // const [taskImage, setTaskImage] = useState<File | null>(null); 
 
 
     const UploadVideo = async (file: File): Promise<string | null> => {

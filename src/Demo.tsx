@@ -1,4 +1,4 @@
-import { supabase } from "./services/supabase";
+import { supabase } from "../services/supabase";
 import { useState, useEffect, type ChangeEvent } from "react";
 import './index.css'
 

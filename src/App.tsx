@@ -1,150 +1,148 @@
-import { supabase } from "./services/supabase"
-import { useState, useEffect } from "react"
-import './index.css'
+import { useState, useEffect } from 'react'
+import './App.css'
+import { supabase } from '../services/supabase'
 
-// reference for task
 interface Task {
-  id: number,
-  created_at: string,
-  title: string,
-  description: string,
+  id: number
+  title: string
+  description: string
+  created_at: string
 }
 
 export default function App() {
-  const [newTask, setNewTask] = useState({title: "", description: ""});
-  const [tasks, setTasks] = useState<Task[]>([]); // useState for displaying the task
-  const [newDescription, setNewDescription] = useState("");
+  const tableName: string = 'webtask'
 
-  //Update Function
-  const UpdateFunction = async (id: number) => {
-    const {error} = await supabase
-                  .from('tasks') // table name
-                  .update({description: newDescription})
-                  .eq('id', id)
+  const [newTask, setNewTask] = useState({ title: "", description: ""})
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [newDescription, setNewDescription] = useState("")
+  
+  // CRUD {Create , Read , Update and Delete}
 
-    if (error) {
-      console.error("Error update task", error.message);
-      return 0;
-    }
-    // if no error, this will finish running
+  // Delete function
+  const deleteTask = async (id: number) => {
+    const { error } = await supabase
+                    .from(tableName)
+                    .delete()
+                    .eq("id", id)
+
+    if (error) {                                   
+      console.error("Error delete task", error.message)
+      return;
+    } else {
+      console.log("Succesfull delete")                   
+    }   
+
   }
 
-  //Delete Function
-  const DeleteFunction = async (id: number) => {
-    const {error} = await supabase
-                  .from('tasks')
-                  .delete()
-                  .eq('id', id)
+  // Update function
+  const updateTask = async (id: number) => {
+    const { error } = await supabase
+                    .from(tableName)
+                    .update({description: newDescription})
+                    .eq("id", id)
 
-    if (error) {
-      console.error("Error delete task", error.message);
-      return 0;
-    }
-    // if no error, this will finish running
+    if (error) {                                   
+      console.error("Error update task", error.message)
+      return;
+    } else {
+      console.log("Succesfull update")                   
+    }   
+
   }
 
-  // Read Function
-  const ReadFunction = async () => {
-    const {error, data} = await supabase
-                    .from('tasks')
-                    .select('*') // 'column', all: *
-                    .order('created_at', {ascending: false})
-                    // column, 'id': {ascending: true ? false}
+  // Read function
+  const fetchTask = async () => {
 
-    if (error) { // catch the error
-      console.error("Error read task", error.message);
-      return 0;
+    const { data, error } = await supabase
+                .from(tableName)
+                .select("*")
+                .order("created_at", {ascending: true})
+
+    if (error) {                                   
+      console.error("Error fetch task", error.message)
+      return;
+    } else {
+      console.log("Succesfull fetch")                   
     }
 
-    // fetch the data
-    setTasks(data);
+    setTasks(data)                                        // usestate setTasks to put it in the data in []
+  }
+
+  // Create function
+  const sumbitTask = async () => {                        // create function with 'async'
+
+    const { error } = await supabase                      // connecting with supabase
+        .from(tableName)                                  // table name
+        .insert(newTask)                                  // insert the data to the table
+        .single()                                         // once insert 
+
+    if (error) {                                          // check if there is an error
+      console.error("Error insert task", error.message)
+      return;
+    } else {
+      console.log("Succesfull insert")                    // succesfull
+    }
+
+    setNewTask({title: "", description: ""});             // calling setNewTask to empty input, when succesfull
   }
 
 
-  // Create Function
-  const CreateFunction = async (e: any) => {
-    e.preventDefault();
+  useEffect(() => {                                       // useEffect for displaying the tasks
+    fetchTask();
+  })
 
-    const {error} = await supabase  
-                .from('tasks') // table name
-                .insert(newTask) // insert fucntion
-                .single() // single 
-
-    if (error) {
-      console.error("Error create task", error.message);
-      return 0; // return 0
-    }
-
-    setNewTask({title: "", description: ""});
-  }
-
-  // useEffect
-  useEffect(()=> {
-    ReadFunction();
-  }, [])
 
   return (
     <>
-    <h1>Supabase React js</h1>
+      <h1 className='font-bold underline text-blue-500'>Supabase x React js</h1>
 
+      <form action={sumbitTask} className='mb-5'> 
+        <div className='flex flex-col m-4 p-4'>
+          <input
+            className='p-4 m-2'
+            type="text"
+            placeholder='Title Here'
+            required
+            onChange={ (e) => {                             // onChange lamda function
+              setNewTask( (prev) =>  ({...prev, title: e.target.value}))
+            }}
+          />
 
-    <form onSubmit={CreateFunction} action="">
+          <textarea
+            className='p-4 m-2'
+            placeholder='Description Here'
+            required
+            onChange={ (e) => {                             // onChange lamda function
+              setNewTask( (prev) =>  ({...prev, description: e.target.value}))
+            }}
+          />
+        </div>
+        <button>Add Task</button>
 
-    <input 
-      type="text" 
-      placeholder="Title Here"
+      </form>
 
-      //onChange
-      onChange={(e) => 
-        setNewTask((prev) => ({...prev, title: e.target.value}))
-      }
-    />
-
-    <textarea 
-      name="" 
-      id=""
-      placeholder="Description Here"
-
-      //onChange
-      onChange={(e) => 
-        setNewTask((prev) => ({...prev, description: e.target.value}))
-      }
-
-    >
-    </textarea>
-
-    <button>Add Task</button>
-
-    </form>
-
-
-    <ul>
-      {/*call useState 'tasks' */}
-      {tasks.map((task, key) => (
+      <ul>
+        {tasks.map((task, key) => (                       // using map() to display the tasks
         <li key={key}>
-          <div>
-            <h1>{task.title}</h1>
-            <p>{task.description}</p>
+          <div className='flex flex-col m-2'>
 
-            <textarea 
-              name="" 
-              id=""
-              placeholder="Edit description"
-
-              //onChange
-              onChange={(e) => 
+            <h3 className='text-3xl font-bold text-purple-400'>{task.title}</h3>
+            <p className='text-[24px] text-lime-400 italic'>{task.description}</p>
+            <textarea
+              className='p-3 m-4'
+              placeholder='Edit description'
+              onChange={(e) => {
                 setNewDescription(e.target.value)
-              } 
+              }}
+            />
 
-            >
-            </textarea>
+            <button className='m-1' onClick={() => updateTask(task.id)}>Update Task</button>
+            <button className='m-1' onClick={() => deleteTask(task.id)}>Delete Task</button>
 
-            <button onClick={() => UpdateFunction(task.id)}>Update</button>
-            <button onClick={() => DeleteFunction(task.id)}>Delete</button>
           </div>
         </li>
-      ))}
-    </ul>
+        ))}
+      </ul>
     </>
   )
 }
