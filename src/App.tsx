@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type ChangeEvent } from 'react'
 import './App.css'
 import { supabase } from '../services/supabase'
 
@@ -7,14 +7,92 @@ interface Task {
   title: string
   description: string
   created_at: string
+
+  // image and video reference
+  image_url: string
+  video_url: string
 }
 
 export default function App() {
   const tableName = import.meta.env.VITE_TABLE_NAME
+  const storageName = import.meta.env.VITE_STORAGE_NAME
 
   const [newTask, setNewTask] = useState({ title: "", description: ""})
   const [tasks, setTasks] = useState<Task[]>([])
   const [newDescription, setNewDescription] = useState("")
+
+  //New: video and image useState
+    const [taskVideo, setTaskVideo] = useState<File | null>(null); // useState for Image
+    const [taskImage, setTaskImage] = useState<File | null>(null); // useState for Image
+
+
+    // Upload Image/Video
+    //New: Upload Image Function
+    const UploadImage = async (file: File): Promise<string | null> => {
+
+        // design a file path
+        const filePath = `${file.name}-${Date.now()}`
+
+        // upload to storage
+        const {error} = await supabase  
+                        .storage // storage 
+                        .from(storageName) // bucket name
+                        .upload(filePath, file) // 3rd: argrumnet optional
+
+        if (error) {
+            console.error("Error update task", error.message)
+            return null; 
+        }
+
+        //create public url
+        const {data} = await supabase
+                        .storage // select the 'storage'
+                        .from(storageName) // bucket name
+                        .getPublicUrl(filePath)
+
+        // return data -> publicUrl
+        return data.publicUrl
+    }
+
+    // Upload Image Function
+    const UploadVideo = async (file: File): Promise<string | null> => {
+
+        // design a file path
+        const filePath = `${file.name}-${Date.now()}`
+
+        // upload to storage
+        const {error} = await supabase  
+                        .storage
+                        .from(storageName)
+                        .upload(filePath, file)
+
+        if (error) {
+            console.error("Error update task", error.message)
+            return null; 
+        }
+
+        // public url
+        const {data} = await supabase
+                        .storage
+                        .from(storageName)
+                        .getPublicUrl(filePath)
+
+        return data.publicUrl
+    }
+
+    // function where the user inputs 
+    const handleImage = (e: ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            // useState respectively 
+            setTaskImage(e.target.files[0]);
+        }
+    }
+
+    const handleVideo = (e: ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            setTaskVideo(e.target.files[0]);
+        }
+    }
   
   // CRUD {Create , Read , Update and Delete}
 
@@ -71,9 +149,22 @@ export default function App() {
   // Create function
   const sumbitTask = async () => {                        // create function with 'async'
 
+    // add for imageurl and videourl
+    let imageUrl: string | null = null;
+    let videoUrl: string | null = null;
+
+    if (taskImage) {
+        imageUrl = await UploadImage(taskImage)
+    }
+
+    if (taskVideo) {
+        videoUrl = await UploadVideo(taskVideo)
+    }
+
     const { error } = await supabase                      // connecting with supabase
         .from(tableName)                                  // table name
-        .insert(newTask)                                  // insert the data to the table
+        .insert({...newTask, image_url: imageUrl, video_url: videoUrl}) // insert the data to the table, with new add image and video
+        .select()
         .single()                                         // once insert 
 
     if (error) {                                          // check if there is an error
@@ -117,6 +208,21 @@ export default function App() {
             }}
           />
         </div>
+
+         <div className="flex border-2 p-4 m-4">
+              <div>
+                  <p className="font-semibold">Image Upload</p>
+                  {/* handleImage */}
+                  <input type="file" accept="image/*" onChange={handleImage}/>
+              </div>
+
+              <div>
+                  <p className="font-semibold">Video Upload</p>
+                  {/* handleVideo*/}
+                  <input type="file" accept="video/*" onChange={handleVideo}/>
+              </div>
+          </div>
+
         <button>Add Task</button>
 
       </form>
@@ -128,6 +234,27 @@ export default function App() {
 
             <h3 className='text-3xl font-bold text-purple-400'>{task.title}</h3>
             <p className='text-[24px] text-lime-400 italic'>{task.description}</p>
+
+            {task.image_url == null ? (
+                  <>
+                      <img hidden/>
+                  </>
+              ) : (
+                  <>
+                      <img src={task.image_url} width="640" alt="" />
+                  </>
+              )}
+
+              {task.video_url == null ? (
+                  <>
+                      <video hidden />
+                  </>
+              ) : (
+                  <>
+                      <video src={task.video_url} controls width="640"></video>
+                  </>
+              )}
+
             <textarea
               className='p-3 m-4'
               placeholder='Edit description'
